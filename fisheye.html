@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<canvas id="canvas" style="display:block;margin:0 auto;border:1px solid #aaa">
+		该浏览器不支持canvas!
+	</canvas>
+	<canvas id="offcanvas" style="display:none"></canvas>
+<script type="text/javascript">
+	var canvas = document.getElementById("canvas");
+	var context = canvas.getContext("2d");
+
+	var offcanvas = document.getElementById("offcanvas");
+	var offcanvascontext = offcanvas.getContext("2d");
+
+
+	var image = new Image();
+	var ismouseDown = false;
+	var scale;
+	window.onload = function(){
+		canvas.width = 350;
+		canvas.height = 500;
+		image.src = "pic/girl.jpg"
+		image.onload = function(){
+			offcanvas.width = image.width;
+			offcanvas.height = image.height;
+
+			scale = offcanvas.width/canvas.width;
+			context.drawImage(image,0,0,canvas.width,canvas.height);
+			offcanvascontext.drawImage( image , 0 , 0 )
+		}
+	}
+
+	function windowToCanvas(x,y){
+		var bbox = canvas.getBoundingClientRect();
+		return {x:x-bbox.left,y:y-bbox.top};
+	}
+
+	canvas.onmousedown = function(e){
+		e.preventDefault();
+		var point = windowToCanvas(e.clientX,e.clientY);
+		ismouseDown = true;
+		showFishEye(true,point);
+	} 
+
+	canvas.onmouseup = function(e){
+		e.preventDefault();
+		ismouseDown = false;
+		showFishEye(false);
+	}
+
+	canvas.onmouseout = function(e){
+		e.preventDefault();
+		ismouseDown = false;
+		showFishEye(false);
+	}
+
+	canvas.onmousemove = function(e){
+		e.preventDefault();
+		var point = windowToCanvas(e.clientX,e.clientY);
+		if(ismouseDown){
+			showFishEye(true,point);
+		}
+	}
+
+	function showFishEye(ismouseDown,point){
+		context.clearRect(0,0,canvas.width,canvas.height);
+		context.drawImage(image,0,0,canvas.width,canvas.height);
+		if(ismouseDown){
+			drowFishEye(point);
+		}
+	}
+
+	function drowFishEye(point){
+		var mr = 50;
+		var imageLG_x = point.x *scale;
+		var imageLG_y = point.y *scale;
+
+		var sx = imageLG_x - mr;
+		var sy = imageLG_y - mr;
+
+		var dx = point.x - mr;
+		var dy = point.y - mr;
+
+		context.save();
+		context.beginPath();
+		context.arc(point.x,point.y,mr,0,Math.PI*2,false);
+		context.stroke();
+		context.clip();
+		context.drawImage(offcanvas,sx,sy,2*mr,2*mr,dx,dy,2*mr,2*mr);
+		context.restore();
+
+	}
+</script>	
+</body>
+</html>
